@@ -6,8 +6,12 @@ import string
 import json
 from scipy import spatial
 import jieba
+from typing import List
+import math
 from gensim.models.word2vec import PathLineSentences
 from gensim.models.word2vec import Word2Vec
+from gensim.models.ldamodel import LdaModel
+from gensim.corpora.dictionary import Dictionary
 
 
 OP = OpenCC('t2s')
@@ -64,4 +68,27 @@ def read_json(path):
 def cos_similarity(embd1,embd2):
     dis = spatial.distance.cosine(embd1,embd2)
     sim = 1. - dis
+    return sim
+
+
+def tokenize(string):
+    string = string.strip()
+    return list(jieba.cut(string))
+
+def remove_punc(sentence:List[str]):
+    return [token for token in sentence if not re.search(punc_pattern,token)]
+
+def remove_stopwords(sentence:List[str]):
+    return [token for token in sentence if token not in stopwords]
+
+def sentence_sim(sentence1:List[str],sentence2:List[str]):
+    '''
+    句子相似度计算公式参考pagerank原始论文实现
+    '''
+    if len(sentence1) == 0 or len(sentence2) == 0:
+        return 0
+    overlap = set(sentence1) & set(sentence2)
+    if math.log(len(sentence1)) + math.log(len(sentence2)) == 0:
+        return 0
+    sim = len(overlap) / (math.log(len(sentence1)) + math.log(len(sentence2)))
     return sim
